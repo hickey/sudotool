@@ -10,6 +10,8 @@ include Log4r
 
 module SudoTool
   
+  VERSION = '1.0'
+  
   module_function
   
   # Take a human readable time delta (e.g. 3w, 28d, or 150h) or specific 

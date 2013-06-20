@@ -5,7 +5,7 @@ require 'sudotool'
 
 Gem::Specification.new do |gem|
   gem.name          = "sudotool"
-  gem.version       = GWT::VERSION
+  gem.version       = SudoTool::VERSION
   gem.platform      = Gem::Platform::RUBY
   gem.authors       = ["Gerard Hickey"]
   gem.email         = ["ghickey@ebay.com"]
