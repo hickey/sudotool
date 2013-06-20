@@ -1,0 +1,111 @@
+
+require 'sudoerfile'
+
+require 'time'
+require 'log4r'
+include Log4r
+
+
+
+module SudoTool
+  
+  # Take a human readable time delta (e.g. 3w, 28d, or 150h) or specific 
+  # time (e.g. 5/21, or 6/13/2013) and convert to a datetime object. The 
+  # accepted suffixes are h(hour), d(day), w(week), m(month), y(year). 
+  # Complex deltas such as 3w4d are not supported at this time. The 
+  # specific time format can accept dash(-), slash(/) or a period(.) as
+  # a seperator.
+  # Params:
+  # +timespec+: human readable time delta or specific time
+  def pretty_time_to_real_time(timespec)
+    # record the current time to make time comparisons
+    now = Time.now
+    
+    
+    timespec =~ %r{^(?<month>\d{1,2})[-/.](?<day>\d{1,2})[-/.]?(?<year>\d{2,4})?$} do |match|
+      if match[:year].nil?
+        # year was not specified, better calculate it
+        year = now.year
+        # lets fake the number of days in the the year for both dates
+        days_now = now.month * 32 + now.day
+        days_spec = match[:month].to_i * 32 + match[:day].to_i
+        if days_spec < days_now:
+          # Specification is for a day before today
+          year += 1
+        end
+        return DateTime(year, match[:month].to_i, match[:day].to_i)
+      end
+    end
+    
+    timespec =~ %r{^(?<quan>\d+)(?<unit>[hdwmy])$} do |match|
+      # Time delta specification
+      days = hours = 0
+      quan = match[:quan].to_i
+      case match[:unit]
+      when 'h'
+        hours = quan
+      when 'd'
+        days = quan
+      when 'w'
+        days = quan * 7
+      when 'm'
+        days = quan * 7 * 4
+      when 'y'
+        days = quan * 365
+      end
+      delta = (days * 86400) + (hours * 3600)
+      return (now + delta)
+    end
+ 
+    # if we get here then we have an unrecognized format
+    raise ArgumentError("Time specification not recognized: #{timespec}")
+  end
+
+
+
+  def purge(logfile=nil, basedir='/etc/sudoers.d')
+    # setup logging to keep an audit trail
+    log = Logger.new('sudotool')
+    if logfile.nil?
+      log.outputters << Outputter.stdout
+      log.formatters << SimpleFormatter.new
+    else
+      log.outputters << FileOutputter.new(logfile, :filename => logfile)
+      log.formatters << PatternFormatter.new(:pattern => '%d [%c] %l: %M',
+                                             :date_pattern => '%Y-%m-%d %H:%M:%S')
+    end
+      
+    # check all the files in the basedir for anything that may have expired
+    old_dir = Dir.pwd
+    begin
+      Dir.chdir basedir
+    rescue Errno::ENOENT => e
+      $stderr.puts "Error: #{basedir} does not exist as a directory"
+      exit 1
+    end
+    
+    Dir.open('.').each do |entry|
+      if File.file? entry
+        log.debug "Processing #{entry}"
+        begin
+          sudofile = SudoerFile.new entry
+        rescue Exception => e
+          log.error "Critical error reading #{entry}: #{e.message}"
+          next
+        end
+        
+        if sudofile.is_locked?
+          log.debug "#{entry} is already locked; skipping"
+        elsif sudoerfile.is_expired?
+          log.info "#{entry} has expired; Locking file"
+          sudofile.lock_file
+        end
+      end
+    end
+    
+    Dir.chdir old_dir
+  end
+  
+
+
+end

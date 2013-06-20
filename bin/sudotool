@@ -1,0 +1,102 @@
+#!/usr/bin/env ruby
+
+$: << File.dirname(__FILE__) + '/../lib' unless $:.include?(File.dirname(__FILE__) + '/../lib/')
+
+require 'sudotool'
+require 'optparse'
+
+
+module SudoTool
+  # process the command line
+  options = { :add_user    = [],
+              :del_user    = [],
+              :runas       = '',
+              :hostgrp     = 'ALL',
+              :cmdgrp      = '',
+              :expire      = nil,
+              :action      = :normal,
+              :basedir     = '/etc/sudoers.d',
+              :logfile     = '/dev/tty' }
+  # sudotool [--add|--del USER] --runas USERTOBE --hostgrp GROUP --cmdgrp GROUP --expire TIME FILE
+  # sudotool --purge [--basedir DIR] [--logfile FILE]
+  OptionParser.new do |opt|
+    opt.banner = "Usage: sudotool [options] filename"
+    
+    # Add and remove users
+    opt.on('--add USER', '-a', 'Add user rights to sudoers file') {|val|
+      options[:add_user] << val
+    }
+    opt.on('--del USER', '--remove', '--rm', '-r', 'Remove user rights from sudoers file') {|val|
+      options[:del_user] << val
+    }
+    
+    # user options
+    opt.on('--runas USER', '-r', 'user allowed to sudo as') {|val|
+      options[:runas] = val
+    }
+    opt.on('--hostgrp NAME', '-H', 'restrict sudo access to specified host group') {|val|
+      options[:hostgrp] = val
+    }
+    opt.on('--cmdgrp NAME', '-c', 'commands to give access to') {|val|
+      options[:cmdgrp] = val
+    }
+
+    
+    opt.on('--expire TIME', '-x', 'when the sudoers access should expire') {|val|
+      options[:expire] = val
+    }
+    opt.on('--purge', '-P', 'lockout expired files') {
+      options[:action] = :purge
+    }
+    
+    opt.on('--log FILE', '-l', 'log actions of purging to FILE') {|val|
+      options[:logfile] = val
+    }
+    opt.on('--basedir DIR', '-d', 'location of sudoers files (default: /etc/sudoers.d)') {|val|
+      options[:basedir] = val
+    }
+  end.parse!
+  
+
+  if options[:action] == :purge
+    SudoTool::purge
+    exit
+  else
+    # Create a SudoerFile instance
+    sudofile = SudoerFile('%s/%s' % (args.basedir, args.filename))
+    
+    # Add / remove permissions from the file
+    unless options[:add_user].empty?
+      options[:add_user].each do |user|
+        right = SudoRight(user)
+        # are there any restrictions on the right? 
+        unless options[:runas].empty?
+          right.runas = options[:runas]
+        end
+        right.hostgrp = options[:hostgrp]
+        if options[:cmdgrp].empty?
+          $strerr.puts "Must specify commands/cmnd_alias when adding user"
+          exit 1
+        else
+          right.cmdgrp = options[:cmdgrp]
+        end
+        sudofile.add_right right
+      end
+    end
+    
+    unless options[:del_user].empty?
+      options[:del_user].each do |user|
+        sudofile.del_right_for_user user
+      end
+    end
+    
+    
+    # Are we setting the expiration of the file?
+    unless options[:expire].nil?
+      sudofile.expiration = SudoTool::pretty_time_to_real_time options[:expire]
+    end
+    
+    # All done making changes... commit them. 
+    sudofile.write
+  end
+end
