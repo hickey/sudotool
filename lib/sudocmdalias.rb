@@ -2,7 +2,7 @@
 require 'sudogroup'
 
 module SudoTool
-  class SudoHostAlias < SudoGroup
+  class SudoCmdAlias < SudoGroup
     
     def initialize(name)
       super(name)

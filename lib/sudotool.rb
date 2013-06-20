@@ -35,7 +35,7 @@ module SudoTool
         # lets fake the number of days in the the year for both dates
         days_now = now.month * 32 + now.day
         days_spec = match[1].to_i * 32 + match[2].to_i
-        if days_spec < days_now:
+        if days_spec < days_now
           # Specification is for a day before today
           year += 1
         end
