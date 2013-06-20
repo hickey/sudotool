@@ -3,20 +3,22 @@
 $: << File.dirname(__FILE__) + '/../lib' unless $:.include?(File.dirname(__FILE__) + '/../lib/')
 
 require 'sudotool'
+require 'sudoerfile'
+require 'sudoright'
 require 'optparse'
 
 
 module SudoTool
   # process the command line
-  options = { :add_user    = [],
-              :del_user    = [],
-              :runas       = '',
-              :hostgrp     = 'ALL',
-              :cmdgrp      = '',
-              :expire      = nil,
-              :action      = :normal,
-              :basedir     = '/etc/sudoers.d',
-              :logfile     = '/dev/tty' }
+  options = { :add_user    => [],
+              :del_user    => [],
+              :runas       => '',
+              :hostgrp     => 'ALL',
+              :cmdgrp      => '',
+              :expire      => nil,
+              :action      => :normal,
+              :basedir     => '/etc/sudoers.d',
+              :logfile     => '/dev/tty' }
   # sudotool [--add|--del USER] --runas USERTOBE --hostgrp GROUP --cmdgrp GROUP --expire TIME FILE
   # sudotool --purge [--basedir DIR] [--logfile FILE]
   OptionParser.new do |opt|
@@ -31,7 +33,7 @@ module SudoTool
     }
     
     # user options
-    opt.on('--runas USER', '-r', 'user allowed to sudo as') {|val|
+    opt.on('--runas USER', '-R', 'user allowed to sudo as') {|val|
       options[:runas] = val
     }
     opt.on('--hostgrp NAME', '-H', 'restrict sudo access to specified host group') {|val|
@@ -55,6 +57,12 @@ module SudoTool
     opt.on('--basedir DIR', '-d', 'location of sudoers files (default: /etc/sudoers.d)') {|val|
       options[:basedir] = val
     }
+    
+    # supid 1.8.7 does not define --help
+    opt.on_tail('--help', '-h', 'Display command line help') {
+      puts opt
+      exit
+    }
   end.parse!
   
 
@@ -63,22 +71,22 @@ module SudoTool
     exit
   else
     # Create a SudoerFile instance
-    sudofile = SudoerFile('%s/%s' % (args.basedir, args.filename))
+    sudofile = SudoerFile.new "#{options[:basedir]}/#{ARGV[0]}"
     
     # Add / remove permissions from the file
     unless options[:add_user].empty?
       options[:add_user].each do |user|
-        right = SudoRight(user)
+        right = SudoRight.new user
         # are there any restrictions on the right? 
         unless options[:runas].empty?
           right.runas = options[:runas]
         end
         right.hostgrp = options[:hostgrp]
         if options[:cmdgrp].empty?
-          $strerr.puts "Must specify commands/cmnd_alias when adding user"
+          $stderr.puts "Must specify commands/cmnd_alias when adding user"
           exit 1
         else
-          right.cmdgrp = options[:cmdgrp]
+          right.cmd = options[:cmdgrp]
         end
         sudofile.add_right right
       end
@@ -89,7 +97,6 @@ module SudoTool
         sudofile.del_right_for_user user
       end
     end
-    
     
     # Are we setting the expiration of the file?
     unless options[:expire].nil?

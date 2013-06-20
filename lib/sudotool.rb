@@ -1,6 +1,7 @@
 
 require 'sudoerfile'
 
+require 'rubygems'
 require 'time'
 require 'log4r'
 include Log4r
@@ -8,6 +9,8 @@ include Log4r
 
 
 module SudoTool
+  
+  module_function
   
   # Take a human readable time delta (e.g. 3w, 28d, or 150h) or specific 
   # time (e.g. 5/21, or 6/13/2013) and convert to a datetime object. The 
@@ -21,27 +24,29 @@ module SudoTool
     # record the current time to make time comparisons
     now = Time.now
     
-    
-    timespec =~ %r{^(?<month>\d{1,2})[-/.](?<day>\d{1,2})[-/.]?(?<year>\d{2,4})?$} do |match|
-      if match[:year].nil?
+    # Unfortunately 1.8.7 does not have named captures :-(
+    match = %r{^(\d{1,2})[-\/.](\d{1,2})[-\/.]?(\d{2,4})?$}.match(timespec) 
+    unless match.nil?
+      if match[3].nil?
         # year was not specified, better calculate it
         year = now.year
         # lets fake the number of days in the the year for both dates
         days_now = now.month * 32 + now.day
-        days_spec = match[:month].to_i * 32 + match[:day].to_i
+        days_spec = match[1].to_i * 32 + match[2].to_i
         if days_spec < days_now:
           # Specification is for a day before today
           year += 1
         end
-        return DateTime(year, match[:month].to_i, match[:day].to_i)
+        return DateTime(year, match[1].to_i, match[2].to_i)
       end
     end
     
-    timespec =~ %r{^(?<quan>\d+)(?<unit>[hdwmy])$} do |match|
+    match = %r{^(\d+)([hdwmy])$}.match(timespec) 
+    unless match.nil?
       # Time delta specification
       days = hours = 0
-      quan = match[:quan].to_i
-      case match[:unit]
+      quan = match[1].to_i
+      case match[2]
       when 'h'
         hours = quan
       when 'd'
@@ -58,7 +63,7 @@ module SudoTool
     end
  
     # if we get here then we have an unrecognized format
-    raise ArgumentError("Time specification not recognized: #{timespec}")
+    raise ArgumentError, "Time specification not recognized: #{timespec}"
   end
 
 
