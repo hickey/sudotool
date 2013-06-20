@@ -1,0 +1,6 @@
+require_relative '../lib/sudotool'
+require_relative '../lib/sudoerfile'
+require_relative '../lib/sudoright'
+require_relative '../lib/sudogroup'
+require_relative '../lib/sudohostalias'
+require_relative '../lib/sudocmdalias'
