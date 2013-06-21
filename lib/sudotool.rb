@@ -78,12 +78,14 @@ module SudoTool
     # setup logging to keep an audit trail
     log = Logger.new('sudotool')
     if logfile.nil?
-      log.outputters << Outputter.stdout
-      log.formatters << SimpleFormatter.new
+      outputter = Outputter.stdout
+      outputter.formatter = SimpleFormatter.new
+      log.outputters << outputter
     else
-      log.outputters << FileOutputter.new(logfile, :filename => logfile)
-      log.formatters << PatternFormatter.new(:pattern => '%d [%c] %l: %M',
-                                             :date_pattern => '%Y-%m-%d %H:%M:%S')
+      file = FileOutputter.new(logfile, :filename => logfile)
+      file.formatter = PatternFormatter.new(:pattern => '%d [%c] %l: %M',
+                                            :date_pattern => '%Y-%m-%d %H:%M:%S')
+      log.outputters << file
     end
       
     # check all the files in the basedir for anything that may have expired
@@ -107,7 +109,7 @@ module SudoTool
         
         if sudofile.is_locked?
           log.debug "#{entry} is already locked; skipping"
-        elsif sudoerfile.is_expired?
+        elsif sudofile.is_expired?
           log.info "#{entry} has expired; Locking file"
           sudofile.lock_file
         end

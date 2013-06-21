@@ -42,7 +42,7 @@ module SudoTool
           match = re_attrline.match(line)
           unless match.nil?
             if match[1] == :expires.to_s
-              ex_date = Time.parse(match[2]) #, '%Y-%m-%dT%H:%M:%S')
+              ex_date = DateTime.parse(match[2]) #, '%Y-%m-%dT%H:%M:%S')
               @attrib[:expires] = ex_date
               
               # if there is an expires attribute consider this file managed
