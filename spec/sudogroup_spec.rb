@@ -50,5 +50,24 @@ describe SudoTool::SudoGroup do
     end
   end
   
+  
+  describe '#==' do
+    it 'equals an empty object' do
+      other = SudoTool::SudoGroup.new 'Group'
+      @group.should == other
+    end
+    
+    it 'not equal to non empty object' do
+      other = SudoTool::SudoGroup.new 'Group'
+      other.items << 'item1'
+      other.items << 'item2'
+      @group.should_not == other
+    end
+    
+    it 'not equal object by another name' do
+      other = SudoTool::SudoGroup.new 'Other Name'
+      @group.should_not == other
+    end
+  end
 
 end
