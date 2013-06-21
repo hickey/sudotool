@@ -3,6 +3,18 @@ require 'time'
 
 describe 'SudoTool' do
   
+  before :all do
+    if File.directory? 'tests'
+      Dir.open('tests').each {|f| 
+        unless f == '.' or f == '..'
+          File.unlink "tests/#{f}"
+          end
+      }
+      Dir.rmdir 'tests'
+    end
+  end
+  
+  
   describe '#pretty_time_to_real_time' do
     it 'returns tomowrrows date' do
       tomorrow = Time.now + 86400
@@ -45,6 +57,39 @@ describe 'SudoTool' do
       
   end
   
+  
+  describe '#purge' do
+    it 'only locks files that have expired' do
+      SudoTool::purge(nil, 'tests')
       
+      # file2 should now be locked
+      @file1.is_locked?.should eql false
+      @file2.is_locked?.should eql true
+    end
+    
+    
+    before :each do
+      Dir.mkdir 'tests'
+      
+      @file1 = SudoTool::SudoerFile.new "tests/file1"
+      @file1.expiration = DateTime.now + 3
+      @file1.write
+      
+      @file2 = SudoTool::SudoerFile.new "tests/file2"
+      @file2.expiration = DateTime.now - 1
+      @file2.write
+    end
+    
+    after :all do
+      if File.directory? 'tests'
+        Dir.open('tests').each {|f| 
+          unless f == '.' or f == '..'
+            File.unlink "tests/#{f}"
+            end
+        }
+        Dir.rmdir 'tests'
+      end
+    end
+  end
   
 end
