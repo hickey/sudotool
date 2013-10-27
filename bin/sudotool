@@ -39,7 +39,7 @@ module SudoTool
     opt.on('--hostgrp NAME', '-H', 'restrict sudo access to specified host group') {|val|
       options[:hostgrp] = val
     }
-    opt.on('--cmdgrp NAME', '-c', 'commands to give access to') {|val|
+    opt.on('--cmdgrp NAME', '-C', 'commands to give access to') {|val|
       options[:cmdgrp] = val
     }
 
@@ -56,6 +56,10 @@ module SudoTool
     }
     opt.on('--basedir DIR', '-d', 'location of sudoers files (default: /etc/sudoers.d)') {|val|
       options[:basedir] = val
+    }
+    
+    opt.on('--convert FILE', 'extract entries from sudoers file into a component file') {|val|
+      options[:convert] = val
     }
     
     # supid 1.8.7 does not define --help
