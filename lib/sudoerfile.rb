@@ -116,6 +116,9 @@ module SudoTool
       unless @rights.member? right
         @rights << right
       end
+      
+      # allow chaining of the right
+      right
     end
     
     

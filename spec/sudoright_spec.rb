@@ -22,7 +22,7 @@ describe 'SudoTool::SudoRight' do
   end
   
   
-  describe '#parse' do
+  describe '::parse' do
     it 'parses user with full rights' do
       check = SudoTool::SudoRight.parse('bob   ALL=(ALL)ALL')
       @right.should == check
@@ -43,6 +43,15 @@ describe 'SudoTool::SudoRight' do
       @right.should == check
     end
     
+    
+    describe '::new' do
+      it 'supports chaining of attributes' do 
+        check = SudoTool::SudoRight::parse('bob   devboxes=(ALL) ALL')
+        @undertest = SudoTool::SudoRight.new('bob').hostgrp('devboxes')
+        @undertest.should == check
+      end
+    
+    end
     
   end
   

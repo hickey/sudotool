@@ -14,7 +14,7 @@ module SudoTool
               :del_user    => [],
               :runas       => '',
               :hostgrp     => 'ALL',
-              :cmdgrp      => '',
+              :cmdgrp      => nil,
               :expire      => nil,
               :action      => :normal,
               :basedir     => '/etc/sudoers.d',
@@ -80,18 +80,20 @@ module SudoTool
     # Add / remove permissions from the file
     unless options[:add_user].empty?
       options[:add_user].each do |user|
-        right = SudoRight.new user
-        # are there any restrictions on the right? 
+        # Create the sudo right and add the hostgroup
+        right = SudoRight.new(user).hostgrp(options[:hostgrp])
+        
+        # Who to allow the user assume the identity
         unless options[:runas].empty?
           right.runas = options[:runas]
         end
-        right.hostgrp = options[:hostgrp]
-        if options[:cmdgrp].empty?
+        
+        if options[:cmdgrp].nil?
           $stderr.puts "Must specify commands/cmnd_alias when adding user"
           exit 1
-        else
-          right.cmd = options[:cmdgrp]
         end
+        right.cmd = options[:cmdgrp]
+        
         sudofile.add_right right
       end
     end
