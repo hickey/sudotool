@@ -16,11 +16,14 @@ module SudoTool
       @hostgrp = 'ALL'
       @runas = 'ALL'
       @cmd = 'ALL'
+      
+      # Allow chaining of methods
+      self
     end
     
     
     def self.parse(entry)
-      match = entry.match %r{^([\w+%]:?\w+)\s+(\w+)\s*=\s*(?:\((\w+)\))?\s?(.+)$}
+      match = entry.match %r{^\s*([\w+%]:?\w+)\s+(\w+)\s*=\s*(?:\((\w+)\))?\s*(.+?)\s*$}
       if match.nil?
         return nil
       end
