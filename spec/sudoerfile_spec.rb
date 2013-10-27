@@ -76,6 +76,15 @@ EOF
       
     end
     
+    
+    describe '#del_right_for_user' do
+      it 'removes alice from the list of available sudo rights' do
+        undertest = SudoTool::SudoerFile.new @test_file.path
+        undertest.del_right_for_user('alice')
+        undertest.rights.should_not include SudoTool::SudoRight.new('alice')
+      end
+      
+    end
 end
 
 
