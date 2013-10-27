@@ -19,8 +19,27 @@ module SudoTool
     end
     
     
+    def self.parse(entry)
+      match = entry.match %r{^([\w+%]:?\w+)\s+(\w+)\s*=\s*(?:\((\w+)\))?\s?(.+)$}
+      if match.nil?
+        return nil
+      end
+      
+      # Build up a right object and return it. 
+      right = SudoTool::SudoRight.new match[1]
+      right.hostgrp = match[2]
+      right.runas = match[3]
+      right.cmd = match[4]
+      return right
+    end
+    
+    
     def to_s
-      "%-15s %s = (%s) %s\n" % [user, hostgrp, runas, cmd]
+      if @runas.nil?
+        return "%-15s %s = %s" % [user, hostgrp, cmd]
+      else
+        return "%-15s %s = (%s) %s" % [user, hostgrp, runas, cmd]
+      end
     end
     
     

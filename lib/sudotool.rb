@@ -10,7 +10,7 @@ include Log4r
 
 module SudoTool
   
-  VERSION = '1.0.0'
+  VERSION = '1.1.0'
   
   module_function
   

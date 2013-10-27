@@ -14,7 +14,7 @@ module SudoTool
     
     
     def to_s
-      "%-15s %s = %s\n" % [alias_type, name, items.join(',')]
+      "%-15s %s = %s" % [alias_type, name, items.join(',')]
     end
     
     # Compare this object to another object and return if they are equivilent

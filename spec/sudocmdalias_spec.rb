@@ -76,7 +76,7 @@ describe SudoTool::SudoCmdAlias do
       items = "This is a test".split(' ')
       @group.items = items
       
-      @group.to_s.should eql "%-15s %s = %s\n" % ['Cmnd_Alias', 'Group', items.join(',')]
+      @group.to_s.should eql "%-15s %s = %s" % ['Cmnd_Alias', 'Group', items.join(',')]
     end
   end
 end

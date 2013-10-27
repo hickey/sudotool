@@ -8,6 +8,8 @@ require 'sudocmdalias'
 module SudoTool
   class SudoerFile 
     
+    attr :rights, :hostgrps, :cmdgrps
+    
     def initialize(filename)
       @filename = filename
       @managed= false
@@ -30,10 +32,10 @@ module SudoTool
     def read
       # Setup a number of convenient regex for parsing
       re_attrline  = Regexp.new %r{^#\s+(\w+)\s*:\s*(.+)\s*$}
-      re_rightline = Regexp.new %r{^(\w+)\s+(\w+)\s*=\s*\((\w+)\)\s?(.+)$}
+      re_rightline = Regexp.new %r{^([\w+%]:?\w+)\s+(\w+)\s*=\s*(?:\((\w+)\))?\s?(.+)$}
 
       # Nothing to read here... Move along....
-      if not File.exist? @filename
+      if not File.size? @filename
         return
       end
       
@@ -53,14 +55,13 @@ module SudoTool
             next
           end
           
-          match = re_rightline.match(line) 
-          unless match.nil?
-            right = SudoRight.new match[1]
-            right.hostgrp = match[2]
-            right.runas = match[3]
-            right.cmd = match[4]
-            add_right right
+          # Check to see if the line is a sudo right
+          entry = SudoTool::SudoRight.parse(line)
+          unless entry.nil?
+            add_right entry
           end
+          
+
         end
         
         @file_read = true
@@ -206,21 +207,21 @@ EOH
       # write out the host groups
       unless @hostgrps.empty?
         contents += "# --Begin Host Aliases--\n\n"
-        @hostgrps.each {|group|  contents += group.to_s }
+        @hostgrps.each {|group|  contents += group.to_s + "\n" }
         contents += "\n# --End Host Aliases--\n\n\n"
       end
      
       # write out the command groups
       unless @cmdgrps.empty?
         contents += "# --Begin Command Aliases--\n\n"
-        @cmdgrps.each {|group|  contents += group.to_s } 
+        @cmdgrps.each {|group|  contents += group.to_s + "\n" } 
         contents += "\n# --End Command Aliases--\n\n\n"
       end
   
       # Write out the user rights
       unless @rights.empty?
         contents += "# --Begin Rights--\n\n"
-        @rights.each {|right|  contents += right.to_s }
+        @rights.each {|right|  contents += right.to_s + "\n" }
         contents += "\n# --End Rights--\n"
       end
       
