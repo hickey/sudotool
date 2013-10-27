@@ -45,12 +45,30 @@ describe 'SudoTool::SudoRight' do
     
     
     describe '::new' do
-      it 'supports chaining of attributes' do 
+      it 'supports chaining of hostgrp' do 
         check = SudoTool::SudoRight::parse('bob   devboxes=(ALL) ALL')
         @undertest = SudoTool::SudoRight.new('bob').hostgrp('devboxes')
         @undertest.should == check
       end
     
+      it 'supports chaining of runas' do 
+        check = SudoTool::SudoRight::parse('bob   ALL=(bin) ALL')
+        @undertest = SudoTool::SudoRight.new('bob').runas('bin')
+        @undertest.should == check
+      end
+      
+      it 'supports chaining of cmd' do 
+        check = SudoTool::SudoRight::parse('bob   ALL=(ALL) /bin/ls')
+        @undertest = SudoTool::SudoRight.new('bob').cmd('/bin/ls')
+        @undertest.should == check
+      end
+      
+      it 'supports chaining of all attributes' do 
+        check = SudoTool::SudoRight::parse('bob   devboxes=(bin) /bin/ls')
+        @undertest = SudoTool::SudoRight.new('bob')
+                        .hostgrp('devboxes').runas('bin').cmd('/bin/ls')
+        @undertest.should == check
+      end
     end
     
   end

@@ -4,9 +4,8 @@ module SudoTool
   class SudoRight
   
     attr_reader   :user
-    attr_accessor :hostgrp
-    attr_accessor :runas
-    attr_accessor :cmd
+    attr_writer   :hostgrp, :runas, :cmd
+
     
     # Create an instance of SudoRight
     # Params:
@@ -55,6 +54,21 @@ module SudoTool
       end
     end
     
+
+    # create some dynamic property methods to allow chaining
+    [:hostgrp, :runas, :cmd].each do |property|
+      eval <<-EOM
+        def #{property}(value=nil)
+          if value.nil?
+            return @#{property}
+          else
+            @#{property} = value
+            return self
+          end
+        end
+      EOM
+    end
     
+
   end
 end
