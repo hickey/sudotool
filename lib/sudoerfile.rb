@@ -10,6 +10,14 @@ module SudoTool
     
     attr :rights, :hostgrps, :cmdgrps
     
+    # Suppress warning when user is not root (set for rspec testing)
+    @@suppress_warning = false
+    
+    def self.suppress_warnings_during_tests
+      @@suppress_warning = true
+    end
+    
+    
     def initialize(filename)
       @filename = filename
       @managed= false
@@ -44,8 +52,12 @@ module SudoTool
           match = re_attrline.match(line)
           unless match.nil?
             if match[1] == :expires.to_s
-              ex_date = DateTime.parse(match[2]) #, '%Y-%m-%dT%H:%M:%S')
-              @attrib[:expires] = ex_date
+              if match[2] == 'Never'
+                @attrib[:expires] = :never
+              else
+                ex_date = DateTime.parse(match[2]) #, '%Y-%m-%dT%H:%M:%S')
+                @attrib[:expires] = ex_date
+              end
               
               # if there is an expires attribute consider this file managed
               @managed = true
@@ -78,7 +90,7 @@ module SudoTool
     
     
     def write 
-      if @file_read and not managed?
+      if @file_read and not is_managed?
         return
       end
       if is_locked?
@@ -97,10 +109,12 @@ module SudoTool
       begin
         File.chown(0, 0, @filename)
       rescue Exception => e
-        if Process.euid != 0
-          $stderr.puts "Warning: non root user can not set ownership of file."
-        else
-          $stderr.puts "Exception while setting ownership to root: #{e.message}"
+        unless @@suppress_warning
+          if Process.euid != 0 
+            $stderr.puts "Warning: non root user can not set ownership of file."
+          else
+            $stderr.puts "Exception while setting ownership to root: #{e.message}"
+          end
         end
       end
       File.chmod(0440, @filename)
@@ -150,14 +164,16 @@ module SudoTool
     
     # If the sudoers file has been detected as a managed file, return true. 
     # Otherwise consider it a regular file and return false.
-    def managed?
+    def is_managed?
       @managed
     end
     
     
     # Check the expiration header to see if file has expired
     def is_expired?
-      if not managed?
+      if not is_managed?
+        return false
+      elsif expiration == :never
         return false
       else
         return expiration < DateTime.now
@@ -200,7 +216,11 @@ EOH
       # Create a table of the attributes for this file
       @attrib.keys.each do |key|
         if key == :expires
-          contents += "# %-15s: %s\n" % [key.to_s, @attrib[key].strftime('%Y-%m-%dT%H:%M:%S%z')]
+          if @attrib[key] == :never
+            contents += "%-15s: Never\n" % key.to_s
+          else
+            contents += "# %-15s: %s\n" % [key.to_s, @attrib[key].strftime('%Y-%m-%dT%H:%M:%S%z')]
+          end
         else 
           contents += "# %-15s: %s\n" % [key.to_s, @attrib[key]]
         end

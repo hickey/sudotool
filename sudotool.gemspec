@@ -18,11 +18,9 @@ Gem::Specification.new do |gem|
   gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
   gem.require_paths = ["lib"]
   
-  # gem.add_dependency 'listen', '~> 0.5.0'
   gem.add_dependency  'log4r', '~> 1.1.10'
   
   gem.add_development_dependency 'bundler'
   gem.add_development_dependency 'rspec', '~> 2.11.0'
-  #gem.add_development_dependency 'spork', '~> 1.0.0.rc3'
   #gem.add_development_dependency 'timecop', '~> 0.4.6'
 end

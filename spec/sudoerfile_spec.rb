@@ -4,6 +4,8 @@ require 'tempfile'
 
 describe 'SudoTool::SudoerFile' do
     before :each do
+      # Suppress warnings about not being root
+      SudoTool::SudoerFile.suppress_warnings_during_tests
       
       # Create the test file
       @test_file = Tempfile.new 'sudotest'
@@ -85,6 +87,56 @@ EOF
       end
       
     end
+
+
+    describe '#is_expired?' do
+      it 'returns false when sudoer file is not managed' do
+        test_file = Tempfile.new 'sudotest'
+        undertest = SudoTool::SudoerFile.new test_file.path
+        undertest.is_expired?.should eql false
+      end
+      
+      it 'returns false when sudoer file never expires' do
+        test_file = Tempfile.new 'sudotest'
+        undertest = SudoTool::SudoerFile.new test_file.path
+        undertest.expiration = :never
+        undertest.write
+        
+        undertest = SudoTool::SudoerFile.new test_file.path
+        undertest.is_expired?.should eql false
+      end
+      
+      it 'returns true when sudoer file has expired' do
+        test_file = Tempfile.new 'sudotest'
+        undertest = SudoTool::SudoerFile.new test_file.path
+        undertest.expiration = DateTime.now - 1
+        undertest.write
+        
+        undertest = SudoTool::SudoerFile.new test_file.path
+        undertest.is_expired?.should eql true
+      end
+    end
+
+
+    describe '#is_managed?' do
+      it 'returns false when sudoer file is not managed' do
+        test_file = Tempfile.new 'sudotest'
+        undertest = SudoTool::SudoerFile.new test_file.path
+        undertest.is_managed?.should eql false
+      end
+      
+      it 'returns true when sudoer file is managed' do
+        test_file = Tempfile.new 'sudotest'
+        undertest = SudoTool::SudoerFile.new test_file.path
+        undertest.expiration = DateTime.now + 1
+        undertest.write
+        
+        undertest = SudoTool::SudoerFile.new test_file.path
+        undertest.is_managed?.should eql true
+      end
+      
+    end
+
 end
 
 

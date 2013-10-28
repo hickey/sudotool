@@ -55,6 +55,10 @@ describe 'SudoTool' do
       SudoTool::pretty_time_to_real_time('6/15/2014').to_s.should eql target.to_s
     end
       
+    it 'passes never as a valid time' do 
+      SudoTool::pretty_time_to_real_time('never').should eql :never
+    end
+    
   end
   
   

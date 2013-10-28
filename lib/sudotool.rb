@@ -19,7 +19,8 @@ module SudoTool
   # accepted suffixes are h(hour), d(day), w(week), m(month), y(year). 
   # Complex deltas such as 3w4d are not supported at this time. The 
   # specific time format can accept dash(-), slash(/) or a period(.) as
-  # a seperator.
+  # a seperator. Special case: if the word never, NEVER or Never is 
+  # specified in the timespec parameter, then return the symbol :never.
   # Params:
   # +timespec+: human readable time delta or specific time
   def pretty_time_to_real_time(timespec)
@@ -68,6 +69,11 @@ module SudoTool
       return (now + delta)
     end
  
+    # Special case: never
+    if ['never', 'Never', 'NEVER'].member? timespec
+      return :never
+    end
+    
     # if we get here then we have an unrecognized format
     raise ArgumentError, "Time specification not recognized: #{timespec}"
   end
