@@ -14,11 +14,12 @@ module SudoTool
               :del_user    => [],
               :runas       => '',
               :hostgrp     => 'ALL',
-              :cmdgrp      => nil,
+              :cmdgrp      => '',
               :expire      => nil,
               :action      => :normal,
               :basedir     => '/etc/sudoers.d',
-              :logfile     => '/dev/tty' }
+              :logfile     => '/dev/tty',
+              :omit_user   => [] }
   # sudotool [--add|--del USER] --runas USERTOBE --hostgrp GROUP --cmdgrp GROUP --expire TIME FILE
   # sudotool --purge [--basedir DIR] [--logfile FILE]
   OptionParser.new do |opt|
@@ -58,8 +59,12 @@ module SudoTool
       options[:basedir] = val
     }
     
+    # Convert a sudoer file to a component file
     opt.on('--convert FILE', 'extract entries from sudoers file into a component file') {|val|
       options[:convert] = val
+    }
+    opt.on('--omit-user USERNAME', '-O', 'Omit user when converting to a component file') {|val|
+      options[:omit_user] << val
     }
     
     # supid 1.8.7 does not define --help
@@ -74,33 +79,43 @@ module SudoTool
     SudoTool::purge
     exit
   else
-    # Create a SudoerFile instance
+    # Create / read in a SudoerFile instance
     sudofile = SudoerFile.new "#{options[:basedir]}/#{ARGV[0]}"
     
-    # Add / remove permissions from the file
+    # Adding permissions?
     unless options[:add_user].empty?
       options[:add_user].each do |user|
         # Create the sudo right and add the hostgroup
-        right = SudoRight.new(user).hostgrp(options[:hostgrp])
-        
-        # Who to allow the user assume the identity
-        unless options[:runas].empty?
-          right.runas = options[:runas]
-        end
-        
-        if options[:cmdgrp].nil?
-          $stderr.puts "Must specify commands/cmnd_alias when adding user"
+        begin
+          right = SudoRight.new(user)
+                      .hostgrp(options[:hostgrp])
+                      .runas(options[:runas])
+                      .cmd(options[:cmd])
+        rescue ArgumentError => e
+          stderr.puts "#{e}"
           exit 1
         end
-        right.cmd = options[:cmdgrp]
-        
+
         sudofile.add_right right
       end
     end
     
+    # Removing permissions? 
     unless options[:del_user].empty?
       options[:del_user].each do |user|
         sudofile.del_right_for_user user
+      end
+    end
+    
+    # Converting to a component file? 
+    if options[:convert]
+      orig_sudofile = SudoTool::SudoerFile.new options[:convert]
+      
+      # walk through the sudo rights and move over to component file
+      orig_sudofile.rights.each do |right|
+        unless options[:omit_user].member? right.user
+          sudofile.add_right right
+        end
       end
     end
     

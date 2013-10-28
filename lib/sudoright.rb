@@ -61,6 +61,12 @@ module SudoTool
         def #{property}(value=nil)
           if value.nil?
             return @#{property}
+          elsif value.empty?
+            unless "#{property}" == 'cmd'
+              # Not a valid setting so leave alone
+              return self
+            end
+            raise ArgumentError, "Must specify commands/cmnd_alias when adding user"
           else
             @#{property} = value
             return self
