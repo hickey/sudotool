@@ -1,11 +1,10 @@
 #!/usr/bin/env ruby
 
-$: << File.dirname(__FILE__) + '/../lib' unless $:.include?(File.dirname(__FILE__) + '/../lib/')
-
 require 'sudotool'
 require 'sudoerfile'
 require 'sudoright'
 require 'optparse'
+require 'rainbow'
 
 
 module SudoTool
@@ -92,7 +91,7 @@ module SudoTool
                       .runas(options[:runas])
                       .cmd(options[:cmd])
         rescue ArgumentError => e
-          stderr.puts "#{e}"
+          $stderr.puts "#{e}".color(:red)
           exit 1
         end
 
@@ -125,6 +124,11 @@ module SudoTool
     end
     
     # All done making changes... commit them. 
-    sudofile.write
+    begin
+      sudofile.write
+    rescue Errno::EACCES 
+      $stderr.puts "#{sudofile.filename} can not be written. Executing as root?".color(:red)
+      exit 2
+    end
   end
 end

@@ -19,8 +19,10 @@ Gem::Specification.new do |gem|
   gem.require_paths = ["lib"]
   
   gem.add_dependency  'log4r', '~> 1.1.10'
+  gem.add_dependency  'rainbow'
   
   gem.add_development_dependency 'bundler'
   gem.add_development_dependency 'rspec', '~> 2.11.0'
   #gem.add_development_dependency 'timecop', '~> 0.4.6'
 end
+
