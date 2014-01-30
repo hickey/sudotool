@@ -1,11 +1,8 @@
 # -*- encoding: utf-8 -*-
-lib = File.expand_path('../lib', __FILE__)
-$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'sudotool'
 
 Gem::Specification.new do |gem|
   gem.name          = "sudotool"
-  gem.version       = SudoTool::VERSION
+  gem.version       = '1.1.1'
   gem.platform      = Gem::Platform::RUBY
   gem.authors       = ["Gerard Hickey"]
   gem.email         = ["ghickey@ebay.com"]
