@@ -7,7 +7,7 @@ require 'sudocmdalias'
 
 module SudoTool
   class SudoerFile 
-    
+    attr_reader :filename
     attr :rights, :hostgrps, :cmdgrps
     
     # Suppress warning when user is not root (set for rspec testing)
@@ -217,7 +217,7 @@ EOH
       @attrib.keys.each do |key|
         if key == :expires
           if @attrib[key] == :never
-            contents += "%-15s: Never\n" % key.to_s
+            contents += "# %-15s: Never\n" % key.to_s
           else
             contents += "# %-15s: %s\n" % [key.to_s, @attrib[key].strftime('%Y-%m-%dT%H:%M:%S%z')]
           end
