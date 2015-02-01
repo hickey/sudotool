@@ -72,6 +72,10 @@ Options
 
   Specify an alternative location for the sudoer.d component files. By default the location of the component files is /etc/sudoers.d, but on some installations this location may need to be specified to correctly identify the component files. 
   
+Bugs
+====
+
+Sudotool is supported only under ruby 1.9.3 and greater. Because of issues with the DateTime class in ruby 1.8.7, sudotool will not run correctly without a moderate amount of work. If you are still running 1.8.7, you should jetison it now. If you provide a patch to make sudotool run under 1.8.7, I may accept it but don't count on it. 
 
 Change Log
 ----------
@@ -87,5 +91,5 @@ Author
 ------
 
 Gerard Hickey
-ghickey@ebay.com
+hickey@kinetic-compute.com
 

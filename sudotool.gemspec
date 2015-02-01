@@ -4,6 +4,7 @@ Gem::Specification.new do |gem|
   gem.name          = "sudotool"
   gem.version       = '1.1.1'
   gem.platform      = Gem::Platform::RUBY
+  gem.required_ruby_version = '>= 1.9.3'
   gem.authors       = ["Gerard Hickey"]
   gem.email         = ["ghickey@ebay.com"]
   # gem.description   = %q{TODO: Write a gem description}
