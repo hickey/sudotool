@@ -8,3 +8,7 @@ namespace :spec do
   desc "Clean up rbx compiled files and run spec suite"
   RSpec::Core::RakeTask.new(:ci) { |t| Dir.glob("**/*.rbc").each {|f| FileUtils.rm_f(f) } }
 end
+
+
+desc "Run Travis CI tests"
+task :default => 'spec'
