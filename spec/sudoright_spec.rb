@@ -65,8 +65,7 @@ describe 'SudoTool::SudoRight' do
       
       it 'supports chaining of all attributes' do 
         check = SudoTool::SudoRight::parse('bob   devboxes=(bin) /bin/ls')
-        @undertest = SudoTool::SudoRight.new('bob')
-                        .hostgrp('devboxes').runas('bin').cmd('/bin/ls')
+        @undertest = SudoTool::SudoRight.new('bob').hostgrp('devboxes').runas('bin').cmd('/bin/ls')
         @undertest.should == check
       end
     end
