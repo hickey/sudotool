@@ -3,6 +3,7 @@ sudotool
 
 Tool for automating sudoer.d files and providing rights that expire within a specified timeframe.
 
+[![Build Status](https://travis-ci.org/hickey/sudotool.svg?branch=master)](https://travis-ci.org/hickey/sudotool)
 
 Usage
 -----
