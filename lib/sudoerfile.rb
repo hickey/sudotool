@@ -8,7 +8,9 @@ require 'sudocmdalias'
 module SudoTool
   class SudoerFile 
     attr_reader :filename
-    attr :rights, :hostgrps, :cmdgrps
+    attr        :rights
+    attr        :hostgrps
+    attr        :cmdgrps
     
     # Suppress warning when user is not root (set for rspec testing)
     @@suppress_warning = false

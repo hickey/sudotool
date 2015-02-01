@@ -4,7 +4,9 @@ module SudoTool
   class SudoRight
   
     attr_reader   :user
-    attr_writer   :hostgrp, :runas, :cmd
+    attr_writer   :hostgrp
+    attr_writer   :runas
+    attr_writer   :cmd
 
     
     # Create an instance of SudoRight
